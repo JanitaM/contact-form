@@ -1,60 +1,90 @@
 import React, { useState } from 'react';
-import { Button, TextField } from '@material-ui/core';
+import { Button, TextField, Typography } from '@material-ui/core';
 import axios from 'axios';
 
 const Form = () => {
   const [values, setValues] = useState({
     name: '',
-    message: ''
+    email: '',
+    content: ''
   });
 
+  const [isSending, setIsSending] = useState(false);
+
   const handleChange = (e) => {
-    console.log(e);
     e.preventDefault();
     setValues({ ...values, [e.target.name]: e.target.value });
   };
 
   const sendMessage = () => {
+    setIsSending(true);
+
     axios({
       method: 'post',
-      url: 'http://localhost:4000/postMessage',
+      url:
+        'https://ln34dstzff.execute-api.us-east-1.amazonaws.com/dev/email/send',
+      crossDomain: 'true',
+      headers: {
+        'Content-Type': 'application/json'
+      },
       data: {
         name: values.name,
-        message: values.message
+        email: values.email,
+        content: values.content
       }
     })
-      .then((response) => console.log(response))
+      .then((response) => {
+        setIsSending(false);
+        console.log(response);
+      })
       .catch((error) => console.log(error));
 
     setValues({
       name: '',
-      message: ''
+      email: '',
+      content: ''
     });
   };
 
   return (
     <>
       <h1>Contact Form</h1>
-      <p>Send me a message</p>
+      <p>Send a message</p>
 
       <form style={{ maxWidth: '600px', margin: '0 auto' }}>
-        <TextField
-          label='Name'
-          name='name'
-          value={values.name}
-          fullWidth
-          onChange={handleChange}
-        />
-        <TextField
-          label='Message'
-          name='message'
-          value={values.message}
-          fullWidth
-          onChange={handleChange}
-        />
-        <Button style={{ margin: '1rem' }} onClick={sendMessage}>
-          Send
-        </Button>
+        {isSending ? (
+          <Typography component='h4'>Sending...</Typography>
+        ) : (
+          <>
+            <TextField
+              style={{ marginBottom: '1rem' }}
+              label='Name'
+              name='name'
+              value={values.name}
+              fullWidth
+              onChange={handleChange}
+            />
+            <TextField
+              style={{ marginBottom: '1rem' }}
+              label='Email'
+              name='email'
+              value={values.email}
+              fullWidth
+              onChange={handleChange}
+            />
+            <TextField
+              style={{ marginBottom: '1rem' }}
+              label='Message'
+              name='content'
+              value={values.content}
+              fullWidth
+              onChange={handleChange}
+            />
+            <Button style={{ margin: '1rem' }} onClick={sendMessage}>
+              Send
+            </Button>
+          </>
+        )}
       </form>
     </>
   );
